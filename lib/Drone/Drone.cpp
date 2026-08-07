@@ -259,6 +259,18 @@ void Drone::loadGainsFromStorage() {
     xK[2] = preferences.getDouble("xKd", 0.0);
 
     preferences.end();
+
+	yK[0] = 40.0;
+    yK[1] = 0.0;
+    yK[2] = 0.0;
+    
+    zK[0] = 0.0;
+    zK[1] = 0.0;
+    zK[2] = 0.0;
+    
+    xK[0] = 0.0;
+    xK[1] = 0.0;
+    xK[2] = 0.0;
 }
 
 void Drone::saveGainsToStorage() {

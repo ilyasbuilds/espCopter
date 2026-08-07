@@ -23,11 +23,11 @@ void DPID::calculate(){
 	else if(error < -180) error += 360;
 	
 	currentTimeStamp = micros();
-	timeElapsed = (currentTimeStamp - lastTimeStamp) / 1000000.0;
+	timeElapsed = currentTimeStamp - lastTimeStamp;
 
 	// Lock to 400Hz (2.5ms period)
-	if(timeElapsed < 0.0025) return; // Skip if less than 2.5ms has passed
-	timeElapsed = 0.0025; // Force constant time step at 400Hz
+	if(timeElapsed <= 2500) return; // Skip if less than 2.5ms has passed
+	//timeElapsed = 2500; // Force constant time step at 400Hz
 	
 	// Update integral with anti-windup
 	kiError += (*k[1] * error * timeElapsed);
