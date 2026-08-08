@@ -143,10 +143,10 @@ void Drone::fastLoop() {
 		output[3] = 1000;
 	} else {
 		//Current Output and Direction of spin
-		output[0] = rcValues[1] + velControlY - velControlZ - velControlX; //Front left - CCW
-		output[1] = rcValues[1] - velControlY - velControlZ + velControlX; //Front right - CW
-		output[2] = rcValues[1] + velControlY + velControlZ + velControlX; //Rear Left - CW
-		output[3] = rcValues[1] - velControlY + velControlZ - velControlX; //Rear right - CCW
+		output[0] = rcValues[1] - velControlY - velControlZ - velControlX; //Front left - CCW
+		output[1] = rcValues[1] + velControlY - velControlZ + velControlX; //Front right - CW
+		output[2] = rcValues[1] - velControlY + velControlZ + velControlX; //Rear Left - CW
+		output[3] = rcValues[1] + velControlY + velControlZ - velControlX; //Rear right - CCW
 	}
 	controller->loop();
 }
