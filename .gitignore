@@ -2,3 +2,5 @@
 .pioenvs
 .piolibdeps
 tags
+
+.vscode
