@@ -2,6 +2,7 @@
 #define MOTOR_CONTROLLER_H
 
 #include <Arduino.h>
+#include <DShotRMT.h>
 #include <ESP32Servo.h>
 
 class MotorInterface {
@@ -46,6 +47,29 @@ private:
     Servo back_left;
     Servo back_right;
   } servos{};
+  MotorCommand last_command{};
+  bool armed = false;
+};
+
+class DshotMotorController : public MotorInterface {
+public:
+  DshotMotorController();
+  void loop() override;
+  void setCommand(const MotorCommand &command) override;
+  bool armControllers() override;
+  bool isArmed() override { return armed; }
+
+private:
+  struct MotorContainer {
+    MotorContainer(gpio_num_t front_left_pin, gpio_num_t front_right_pin,
+                   gpio_num_t back_left_pin, gpio_num_t back_right_pin)
+        : front_left(front_left_pin, 0), front_right(front_right_pin, 1),
+          back_left(back_left_pin, 2), back_right(back_right_pin, 3) {}
+    DShotRMT front_left;
+    DShotRMT front_right;
+    DShotRMT back_left;
+    DShotRMT back_right;
+  } motors;
   MotorCommand last_command{};
   bool armed = false;
 };

@@ -1,0 +1,13 @@
+diff --git a/DShotRMT.cpp b/DShotRMT.cpp
+index ac703ef..31b179f 100644
+--- a/DShotRMT.cpp
++++ b/DShotRMT.cpp
+@@ -136,7 +136,7 @@ void DShotRMT::sendThrottleValue(uint16_t throttle_value)
+     dshot_packet_t dshot_rmt_packet = {};
+ 
+     // Check if the throttle value is less than the minimum allowed value for the DShot protocol.
+-    if (throttle_value < DSHOT_THROTTLE_MIN)
++    if (throttle_value < DSHOT_THROTTLE_MIN && throttle_value != 0)
+     {
+         throttle_value = DSHOT_THROTTLE_MIN;
+     }
