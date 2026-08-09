@@ -2,23 +2,52 @@
 #define MOTOR_CONTROLLER_H
 
 #include <Arduino.h>
-#include "config.h"
 #include <ESP32Servo.h>
-#include "Adafruit_BNO055.h"
-#include "Pid.h"
-class MotorController {
+
+class MotorInterface {
 public:
-	// Motor (servo) objects
-	Servo* motors;
-	double* controlSig;
-    unsigned long lastMotorUpdate;
-	//Motor objects
-	MotorController(Servo* motors);
-	//Pid values
-	// Pulse the loop function from the main thread
-	void loop();
-	void attachControllers(double* arr);
+  // Contains commanded power to each motor. Commands are in the range [-1,1]
+  // with +/- 1 being max power in either direction
+  struct MotorCommand {
+    // C++ 11 defaults disqualify from brace initialization so this needs
+    // constructor
+    MotorCommand(double front_left_, double front_right_, double back_left_,
+                 double back_right_)
+        : front_left(front_left_), front_right(front_right_),
+          back_left(back_left_), back_right(back_right_) {}
+    MotorCommand(){};
+    double front_left = 0.0;
+    double front_right = 0.0;
+    double back_left = 0.0;
+    double back_right = 0.0;
+  };
+  virtual ~MotorInterface() = default;
+  // Run the motor loop and apply commands
+  virtual void loop() = 0;
+  virtual void setCommand(const MotorCommand &command) = 0;
+  // Blocking function (up to several seconds) to arm motors. Returns false if
+  // the arm failed
+  virtual bool armControllers() = 0;
+  virtual bool isArmed() = 0;
+};
+
+class PwmMotorController : public MotorInterface {
+public:
+  PwmMotorController();
+  void loop() override;
+  void setCommand(const MotorCommand &command) override;
+  bool armControllers() override;
+  bool isArmed() override { return armed; }
+
+private:
+  struct {
+    Servo front_left;
+    Servo front_right;
+    Servo back_left;
+    Servo back_right;
+  } servos{};
+  MotorCommand last_command{};
+  bool armed = false;
 };
 
 #endif
-

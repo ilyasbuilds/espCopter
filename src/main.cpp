@@ -34,11 +34,9 @@ State pastState = ArmESC;
 
 // System components
 Receiver *rc;
-MotorController *flight;
+MotorInterface *flight;
 Drone *drone;
 int startup = 0;
-Servo motA, motB, motC, motD;
-Servo motors[4];
 
 // Add at the top with other globals
 unsigned long loopStartTime;
@@ -94,21 +92,9 @@ void setup() {
   webSocket.onEvent(webSocketEvent);
   Serial.println("WebSocket server started on port 9090");
 #endif
-  motA.setPeriodHertz(MOTOR_PWM_FREQUENCY);
-  motA.attach(UPPER_LEFT_MOTOR, MIN_PULSE_LENGTH, MAX_PULSE_LENGTH);
-  motB.setPeriodHertz(MOTOR_PWM_FREQUENCY);
-  motB.attach(UPPER_RIGHT_MOTOR, MIN_PULSE_LENGTH, MAX_PULSE_LENGTH);
-  motC.setPeriodHertz(MOTOR_PWM_FREQUENCY);
-  motC.attach(LOWER_LEFT_MOTOR, MIN_PULSE_LENGTH, MAX_PULSE_LENGTH);
-  motD.setPeriodHertz(MOTOR_PWM_FREQUENCY);
-  motD.attach(LOWER_RIGHT_MOTOR, MIN_PULSE_LENGTH, MAX_PULSE_LENGTH);
 
-  motors[0] = motA;
-  motors[1] = motB;
-  motors[2] = motC;
-  motors[3] = motD;
   rc = new Receiver();
-  flight = new MotorController(motors);
+  flight = new PwmMotorController();
   drone = new Drone(flight, rc);
 
   // Update PID gains
@@ -171,12 +157,11 @@ String formatDroneData() {
 
   // Motor Values Array (normalized to 0-100%)
   JsonArray motorValues = doc.createNestedArray("MotorValues");
-  double *motors = drone->getMotorValues(); // Assuming this method exists or
-                                            // needs to be added
-  motorValues.add(motors[0]);
-  motorValues.add(motors[1]);
-  motorValues.add(motors[2]);
-  motorValues.add(motors[3]);
+  MotorInterface::MotorCommand command = drone->getMotorValues();
+  motorValues.add(command.front_left);
+  motorValues.add(command.front_right);
+  motorValues.add(command.back_left);
+  motorValues.add(command.back_right);
 
   // Battery Life (you'll need to implement battery monitoring)
   doc["BatteryLife"] =
@@ -291,18 +276,11 @@ void loop() {
   case (ArmESC):
     Serial.println("ARM ESC");
     // Start up ESC's
-    Serial.println("Sending ESC to 2000");
-    motors[0].writeMicroseconds(2000);
-    motors[1].writeMicroseconds(2000);
-    motors[2].writeMicroseconds(2000);
-    motors[3].writeMicroseconds(2000);
-    delay(3000);
-    Serial.println("Sending ESC to 1000");
-    motors[0].writeMicroseconds(1000);
-    motors[1].writeMicroseconds(1000);
-    motors[2].writeMicroseconds(1000);
-    motors[3].writeMicroseconds(1000);
-    delay(3000);
+    if (!flight->armControllers()) {
+      Serial.println("Arming failed, retrying");
+      delay(2000);
+      break;
+    } 
     Serial.println("Setup completed");
     droneState = StartMission;
     break;

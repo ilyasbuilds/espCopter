@@ -1,36 +1,49 @@
 #include "MotorController.h"
 
-MotorController::MotorController(Servo* motor){
-	motors = motor;
-    lastMotorUpdate = 0;
+#include "config.h"
+
+PwmMotorController::PwmMotorController() {
+  servos.front_left.setPeriodHertz(MOTOR_PWM_FREQUENCY);
+  servos.front_right.setPeriodHertz(MOTOR_PWM_FREQUENCY);
+  servos.back_left.setPeriodHertz(MOTOR_PWM_FREQUENCY);
+  servos.back_right.setPeriodHertz(MOTOR_PWM_FREQUENCY);
+
+  servos.front_left.attach(UPPER_LEFT_MOTOR, MIN_PULSE_LENGTH,
+                           MAX_PULSE_LENGTH);
+  servos.front_right.attach(UPPER_RIGHT_MOTOR, MIN_PULSE_LENGTH,
+                            MAX_PULSE_LENGTH);
+  servos.back_left.attach(LOWER_LEFT_MOTOR, MIN_PULSE_LENGTH, MAX_PULSE_LENGTH);
+  servos.back_right.attach(LOWER_RIGHT_MOTOR, MIN_PULSE_LENGTH,
+                           MAX_PULSE_LENGTH);
 }
 
-
-void MotorController::attachControllers(double* arr){
-	controlSig = arr;
+void PwmMotorController::loop() {
+  auto convert_command = [](double command) {
+    if (command > 1.0)
+      command = 1.0;
+    // PWM motor controller only supports forward operation
+    if (command < 0.0)
+      command = 0.0;
+    return static_cast<int>((command * 500) + 1500);
+  };
+  servos.front_left.writeMicroseconds(convert_command(last_command.front_left));
+  servos.front_right.writeMicroseconds(
+      convert_command(last_command.front_right));
+  servos.back_left.writeMicroseconds(convert_command(last_command.back_left));
+  servos.back_right.writeMicroseconds(convert_command(last_command.back_right));
 }
 
-void MotorController::loop(){
-    // unsigned long currentMicros = micros();
-    
-    // if (currentMicros - lastMotorUpdate >= 1000) {
-    //     lastMotorUpdate = currentMicros;
-        
-    if(controlSig[0] > 2000){
-        controlSig[0] = 2000;
-    }
-    if(controlSig[1] > 2000){
-        controlSig[1] = 2000;
-    }
-    if(controlSig[2] > 2000){
-        controlSig[2] = 2000;
-    }
-    if(controlSig[3] > 2000){
-        controlSig[3] = 2000;
-    }
-    motors[0].writeMicroseconds(controlSig[0]);
-    motors[1].writeMicroseconds(controlSig[1]);
-    motors[2].writeMicroseconds(controlSig[2]);
-    motors[3].writeMicroseconds(controlSig[3]);
+void PwmMotorController::setCommand(const MotorCommand &command) {
+  last_command = command;
 }
 
+bool PwmMotorController::armControllers() {
+  setCommand(MotorCommand(1.0, 1.0, 1.0, 1.0));
+  loop();
+  delay(3000);
+  setCommand(MotorCommand{0.0, 0.0, 0.0, 0.0});
+  loop();
+  delay(3000);
+  armed = true;
+  return true;
+}

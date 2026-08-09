@@ -26,9 +26,9 @@ void DPID::calculate(){
 	currentTimeStamp = micros();
 	unsigned long timeElapsed = currentTimeStamp - lastTimeStamp;
 
-	// Lock to 400Hz (2.5ms period)
-	if(timeElapsed <= 10000) return; // Skip if less than 2.5ms has passed
-	timeElapsed = 10000; // Force constant time step at 400Hz
+	// Lock to 100Hz (10ms period)
+	if(timeElapsed <= 10000) return; // Skip if less than 10ms has passed
+	timeElapsed = 10000; // Force constant time step at 100Hz
 	
 	if(*k[1] == 0){
 		kiError = 0;
