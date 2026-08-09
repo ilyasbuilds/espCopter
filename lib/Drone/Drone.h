@@ -10,7 +10,7 @@
 #include "MotorController.h"
 #include "Imu.h"
 #include "Pid.h"
-#include "Reciever.h"
+#include "Receiver.h"
 #include <Preferences.h>
 
 class Drone {
@@ -18,7 +18,7 @@ private:
 	Imu* sensor;
     Adafruit_BNO055 bno;
     MotorController* controller;	
-	Reciever* rc; 
+	Receiver* rc; 
     bool started = false;
 
 	//clock trackers 
@@ -55,7 +55,7 @@ private:
     const int BNO055_RESET_PIN = 15;  // Add this constant
 
 public:
-	Drone(MotorController* mc, Reciever* r);
+	Drone(MotorController* mc, Receiver* r);
 	// Pulse the loop function from the main thread
 	void loop();
 	void updateGain(double* gains);

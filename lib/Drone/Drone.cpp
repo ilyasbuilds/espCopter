@@ -8,7 +8,7 @@ struct DroneLoopTiming {
     unsigned long count;
 } droneTiming = {0, 0, 0, 0, 0};
 
-Drone::Drone(MotorController* mc, Reciever* r) { 
+Drone::Drone(MotorController* mc, Receiver* r) { 
 	sensor = NULL;
 	controller = mc;
 	rc = r;
@@ -109,22 +109,21 @@ void Drone::loop() {
 
 
 void Drone::fastLoop() { 
-	//RC Values Yaw = 0 - Roll = 2 - Pitch = 3  
-	rc->getData(rcValues);
-	rcValues[0] -= 1500.0;
-	rcValues[2] -= 1500.0;
-	rcValues[3] -= 1500.0;
+	//RC Values Yaw = 0 - Roll = 2 - Pitch = 3
+	Receiver::values values = rc->getData();
 
-	rcValues[0] *= 10.0/500.0;
-	rcValues[2] *= 10.0/500.0;
-	rcValues[3] *= 10.0/500.0;
+	const struct {
+		double yaw_gain = 10.0;
+		double roll_gain = -10.0;
+		double pitch_gain = -10.0;
+	} value_to_setpoint;
 
 	//Vel Controller = Roll = 1 Pitch = 2 Yaw = 0
 	//RC Values Yaw = 0 - Roll = 2 - Pitch = 3  
 	//Set the setpoints for the controlllers
-	velSetpoints[0] = rcValues[0]; //Yaw
-	velSetpoints[1] = rcValues[2]*-1; //Roll
-	velSetpoints[2] = rcValues[3]*-1; //Pitch
+	velSetpoints[0] = values.yaw * value_to_setpoint.yaw_gain; //Yaw
+	velSetpoints[1] = values.roll * value_to_setpoint.roll_gain; //Roll
+	velSetpoints[2] = values.pitch * value_to_setpoint.pitch_gain; //Pitch
 
 	//Set the required velocity
 	velControllers[0]->setSetpoint(velSetpoints[0]); //Yaw
