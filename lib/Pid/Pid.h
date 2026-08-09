@@ -13,7 +13,6 @@ class DPID{
 		double lastError;
 		unsigned long lastTimeStamp = 0; 
 		unsigned long currentTimeStamp =0;
-		unsigned long timeElapsed = 0;
 		double kiError;	
 		//References to external motors
 		double* input;

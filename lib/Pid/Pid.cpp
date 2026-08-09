@@ -15,6 +15,7 @@ void DPID::setSetpoint(double newSet){
 	setpoint = newSet;
 }
 
+// TODO: Graph out P I and D sepratly. 
 void DPID::calculate(){
 	double error = *input - setpoint;
 	
@@ -23,24 +24,25 @@ void DPID::calculate(){
 	else if(error < -180) error += 360;
 	
 	currentTimeStamp = micros();
-	timeElapsed = currentTimeStamp - lastTimeStamp;
+	unsigned long timeElapsed = currentTimeStamp - lastTimeStamp;
 
 	// Lock to 400Hz (2.5ms period)
-	if(timeElapsed <= 2500) return; // Skip if less than 2.5ms has passed
-	//timeElapsed = 2500; // Force constant time step at 400Hz
+	if(timeElapsed <= 10000) return; // Skip if less than 2.5ms has passed
+	timeElapsed = 10000; // Force constant time step at 400Hz
 	
-	// Update integral with anti-windup
-	kiError += (*k[1] * error * timeElapsed);
-	if(kiError > max) kiError = max;
-	else if(kiError < -max) kiError = -max;
+	if(*k[1] == 0){
+		kiError = 0;
+	}else{
+		kiError += (*k[1] * error * timeElapsed);
+		if(kiError > max) kiError = max;
+		else if(kiError < -max) kiError = -max;
+	}
+
 	
 	// Calculate D term with no filtering
-	double dTerm = 0;
-	if(timeElapsed > 0) {
-		dTerm = (error - lastError) / timeElapsed;
-	}
-	
-	double tempOutput = (*k[0] * error) + kiError - (*k[2] * dTerm);
+	double dError = (error - lastError) / (timeElapsed/1000000.0);
+
+	double tempOutput = (*k[0] * error) + kiError + (*k[2] * dError);
 	
 	// Output limiting
 	if(tempOutput > max) tempOutput = max;

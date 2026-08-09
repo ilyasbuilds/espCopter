@@ -75,7 +75,7 @@ void Drone::loop() {
 		stepStart = micros();
 		unsigned long currentMicros = micros();
 		
-		if(currentMicros - lastImuUpdate > 2500) {
+		if(currentMicros - lastImuUpdate > 10000) {
 			lastImuUpdate = currentMicros;
 			sensor->loop();
 			sensor->getData(imuValues);
