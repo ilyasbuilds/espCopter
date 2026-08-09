@@ -110,7 +110,7 @@ void Drone::loop() {
 
 void Drone::fastLoop() { 
 	//RC Values Yaw = 0 - Roll = 2 - Pitch = 3
-	Receiver::values values = rc->getData();
+	rcValues = rc->getData();
 
 	const struct {
 		double yaw_gain = 10.0;
@@ -121,9 +121,9 @@ void Drone::fastLoop() {
 	//Vel Controller = Roll = 1 Pitch = 2 Yaw = 0
 	//RC Values Yaw = 0 - Roll = 2 - Pitch = 3  
 	//Set the setpoints for the controlllers
-	velSetpoints[0] = values.yaw * value_to_setpoint.yaw_gain; //Yaw
-	velSetpoints[1] = values.roll * value_to_setpoint.roll_gain; //Roll
-	velSetpoints[2] = values.pitch * value_to_setpoint.pitch_gain; //Pitch
+	velSetpoints[0] = rcValues.yaw * value_to_setpoint.yaw_gain; //Yaw
+	velSetpoints[1] = rcValues.roll * value_to_setpoint.roll_gain; //Roll
+	velSetpoints[2] = rcValues.pitch * value_to_setpoint.pitch_gain; //Pitch
 
 	//Set the required velocity
 	velControllers[0]->setSetpoint(velSetpoints[0]); //Yaw
@@ -135,17 +135,18 @@ void Drone::fastLoop() {
 	velControllers[1]->calculate(); //Roll
 	velControllers[2]->calculate(); //Pitch
 
-	if(rcValues[1] < 1030){
+	if(rcValues.throttle < 0.03){
 		output[0] = 1000;
 		output[1] = 1000;
 		output[2] = 1000;
 		output[3] = 1000;
 	} else {
+		const double throttle_pwm_duration = rcValues.throttle * 1000.0 + 1000.0;
 		//Current Output and Direction of spin
-		output[0] = rcValues[1] - velControlY - velControlZ - velControlX; //Front left - CCW
-		output[1] = rcValues[1] + velControlY - velControlZ + velControlX; //Front right - CW
-		output[2] = rcValues[1] - velControlY + velControlZ + velControlX; //Rear Left - CW
-		output[3] = rcValues[1] + velControlY + velControlZ - velControlX; //Rear right - CCW
+		output[0] = throttle_pwm_duration - velControlY - velControlZ - velControlX; //Front left - CCW
+		output[1] = throttle_pwm_duration + velControlY - velControlZ + velControlX; //Front right - CW
+		output[2] = throttle_pwm_duration - velControlY + velControlZ + velControlX; //Rear Left - CW
+		output[3] = throttle_pwm_duration + velControlY + velControlZ - velControlX; //Rear right - CCW
 	}
 	controller->loop();
 }
@@ -153,13 +154,13 @@ void Drone::fastLoop() {
 void Drone::printIO(){
 	delay(100);
 	Serial.println("---------- RC Values ---------");
-	Serial.print(rcValues[0]);
+	Serial.print(rcValues.yaw);
 	Serial.print(", ");
-	Serial.print(rcValues[1]);
+	Serial.print(rcValues.throttle);
 	Serial.print(", ");
-	Serial.print(rcValues[2]);
+	Serial.print(rcValues.pitch);
 	Serial.print(", ");
-	Serial.print(rcValues[3]);
+	Serial.print(rcValues.roll);
 	Serial.println(".");
 
 	Serial.println("---------- IMU Values ---------");

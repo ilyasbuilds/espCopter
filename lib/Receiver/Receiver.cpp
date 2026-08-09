@@ -105,13 +105,14 @@ Receiver::values Receiver::getData() {
     // map invalid range to no command
     if (value < 900 || value > 2100)
       return 0.0;
-    return (value - 1500) / 500.0;
+    return (value - 1500.0) / 500.0;
   };
   Receiver::values values;
   values.roll = map_value(valueRh);
   values.pitch = map_value(valueRv);
   values.yaw = map_value(valueLh);
-  values.throttle = map_value(valueLv);
+  // Throttle is special because it is [0,1]
+  values.throttle = (1.0 + map_value(valueLv)) / 2.0;
   values.aux[0] = map_value(valueKl);
   values.aux[1] = map_value(valueKr);
   return values;

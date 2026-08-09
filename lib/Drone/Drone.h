@@ -24,7 +24,7 @@ private:
 	//clock trackers 
 	int lastImuUpdate = 0;
 
-	double rcValues[6];
+	Receiver::values rcValues;
 	double imuValues[12];
 	double velControlX, velControlY, velControlZ;
 	double output[4] = {0, 0, 0, 0};

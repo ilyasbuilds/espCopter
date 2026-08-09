@@ -161,12 +161,13 @@ String formatDroneData() {
   auto to_pulse_width = [](double value) {
     return static_cast<unsigned long>(value * 500 + 1500);
   };
-  receiverValues.add(to_pulse_width(values.yaw));      // CH1 / yaw
-  receiverValues.add(to_pulse_width(values.throttle)); // CH2 / throttle
-  receiverValues.add(to_pulse_width(values.roll));     // CH3 / roll
-  receiverValues.add(to_pulse_width(values.pitch));    // CH4 / pitch
-  receiverValues.add(to_pulse_width(values.aux[0]));   // CH5 / aux 0
-  receiverValues.add(to_pulse_width(values.aux[1]));   // CH6 / aux 1
+  receiverValues.add(to_pulse_width(values.yaw)); // CH1 / yaw
+  receiverValues.add(
+      to_pulse_width(values.throttle * 2.0 - 1.0));  // CH2 / throttle
+  receiverValues.add(to_pulse_width(values.roll));   // CH3 / roll
+  receiverValues.add(to_pulse_width(values.pitch));  // CH4 / pitch
+  receiverValues.add(to_pulse_width(values.aux[0])); // CH5 / aux 0
+  receiverValues.add(to_pulse_width(values.aux[1])); // CH6 / aux 1
 
   // Motor Values Array (normalized to 0-100%)
   JsonArray motorValues = doc.createNestedArray("MotorValues");
@@ -312,11 +313,6 @@ void loop() {
 
     timing.totalTime += (micros() - loopStart);
     timing.count++;
-
-    if (timing.count >= 1000) {
-      rc->print();
-      timing = {0,0,0,0};
-    }
 
     // Print timing breakdown every 1000 loops
     if (timing.count >= 1000 && LOG_TIMING) {
